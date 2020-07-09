@@ -1,8 +1,10 @@
 package com.spring.interview.controllers;
 
-import java.util.HashSet;
 
-import org.hibernate.mapping.Set;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -15,7 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.spring.interview.models.Role;
 import com.spring.interview.models.User;
-import com.spring.interview.respos.UserDao;
+//import com.spring.interview.respos.UserDao;
 import com.spring.interview.services.SecurityService;
 import com.spring.interview.services.UserService;
 import com.spring.interview.validator.UserValidator;
@@ -36,7 +38,6 @@ public class MainController {
 	    @GetMapping("/registration")
 	    public String registration(Model model) {
 	        model.addAttribute("userForm", new User());
-
 	        return "registration";
 	    }
 
@@ -47,9 +48,11 @@ public class MainController {
 	        if (bindingResult.hasErrors()) {
 	            return "registration";
 	        }
-
+	        // save many2many user-role entity
+	        Role role1 = new Role(); role1.setName("USER1");
+	        role1.getUsers().add(userForm);
+	        userForm.getRoles().add(role1); 
 	        userService.save(userForm);
-
 	        securityService.autoLogin(userForm.getUsername(), userForm.getPasswordConfirm());
 
 	        return "redirect:/welcome";
@@ -72,20 +75,22 @@ public class MainController {
 	        return "welcome";
 	    }
 	    
-	    @Autowired
-	    private UserDao userDao;
-	    @GetMapping("/saveTestUser")
-	    public @ResponseBody Integer saveTestUser() {
-	    	
-	    	User user = new User();
-	    	user.setUsername("FirstTest");
-	    	user.setPassword(passwdEncoder.encode("passwd"));
-	    	HashSet users = new HashSet();
-	    	users.add(user);
-	    	Role role = new Role();
-	    	role.setName("Test");
-	    	role.setUsers(users);
-	    	
-	    	return userDao.createUser(user);
-	    }
+	    /**
+	     * for Hibernate Session
+	     */
+//	    @Autowired
+//	    private UserDao userDao;
+//	    @GetMapping("/saveTestUser")
+//	    public @ResponseBody Integer saveTestUser() {
+//	    	
+//	    	User user = new User();
+//	    	user.setUsername("FirstTest");
+//	    	user.setPassword(passwdEncoder.encode("passwd"));
+//	    	Role role = new Role();role.setName("USER1");
+//	    	Set<Role> roles = new HashSet();
+//	    	roles.add(role);
+//	    	user.setRoles(roles);
+//	    	
+//	    	return userDao.createUser(user);
+//	    }
 }
